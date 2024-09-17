@@ -1,6 +1,7 @@
 #include <iostream>
 #include <termios.h>
 #include <unistd.h>
+#include<sys/ioctl.h>
 class UnbufferedInput
 {
 public:
@@ -10,7 +11,7 @@ public:
         //Clear the entire screen
         std::cout<<"\033[2J";
         //Move cursor to the top-left position
-        std::cout<<"\033[1;1H";
+        std::cout<<"\033[1;5H";
         // get the current terminal settings and store into orig_termios
         tcgetattr(STDIN_FILENO, &orig_termios);
         // Now copy those values into new termios
@@ -20,6 +21,7 @@ public:
         newtermios.c_lflag &= ~(OPOST);
         newtermios.c_lflag &= ~(ICRNL | IXON | INPCK | ISTRIP);
         tcsetattr(STDIN_FILENO, TCSANOW, &newtermios);
+        drawverticallines('-');
     }
     // Destructor to make the terminal to original state.
     ~UnbufferedInput()
@@ -41,6 +43,23 @@ public:
 
 private:
     struct termios newtermios, orig_termios;
+
+    void drawverticallines(char c){
+        int row_size=0;
+        int col_size=0;
+        struct winsize w;
+        if(ioctl(STDIN_FILENO,TIOCGWINSZ,&w)==-1){
+            perror("Invalid window size");
+            return;
+        }else{
+            row_size=w.ws_row;
+            col_size=w.ws_col;
+        }
+        for(int i=1;i<row_size;i++){
+            std::cout<<c<<std::endl;
+        }
+        std::cout<<"\033[1;2H";
+    }
 };
 int main()
 {
