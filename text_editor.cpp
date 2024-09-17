@@ -7,6 +7,10 @@ public:
     // Constructor
     UnbufferedInput()
     {
+        //Clear the entire screen
+        std::cout<<"\033[2J";
+        //Move cursor to the top-left position
+        std::cout<<"\033[1;1H";
         // get the current terminal settings and store into orig_termios
         tcgetattr(STDIN_FILENO, &orig_termios);
         // Now copy those values into new termios
@@ -20,6 +24,10 @@ public:
     // Destructor to make the terminal to original state.
     ~UnbufferedInput()
     {
+        //Clears the screen
+        std::cout<<"\033[2J";
+        // Move cursor to the top left position
+        std::cout<<"\033[1;1H";
         tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios);
     }
     // Getchar functiion to get the value and retun the value
