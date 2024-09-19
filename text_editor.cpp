@@ -4,6 +4,7 @@
 #include <sys/ioctl.h>
 #include <vector>
 #include <string>
+#include <fstream>
 
 class UnbufferedInput
 {
@@ -43,13 +44,17 @@ public:
         read(STDIN_FILENO, &c, 1);
         return c;
     }
-    void enableecho(){
-        newtermios.c_lflag |=ECHO;
-        tcsetattr(STDIN_FILENO,TCSANOW, &newtermios);
+    void enableecho()
+    {
+        newtermios.c_lflag |= ECHO;
+        // newtermios.c_lflag |= (ICRNL | IXON | INPCK | ISTRIP);
+        tcsetattr(STDIN_FILENO, TCSANOW, &newtermios);
     }
-    void disableecho(){
-        newtermios.c_lflag &=~ECHO;
-        tcsetattr(STDIN_FILENO,TCSANOW, &newtermios);
+    void disableecho()
+    {
+        newtermios.c_lflag &= ~ECHO;
+        // newtermios.c_lflag &= ~(ICRNL | IXON | INPCK | ISTRIP);
+        tcsetattr(STDIN_FILENO, TCSANOW, &newtermios);
     }
     void movecursorup(int n = 1)
     {
@@ -81,7 +86,7 @@ private:
             perror("Invalid window size");
             return;
         }
-        
+
         row_size = w.ws_row;
         for (int i = 0; i < row_size; i++)
         {
@@ -100,6 +105,7 @@ int main()
     std::string currentline;
     std::vector<std::string> data;
     bool isEditorMode = false;
+    std::string filename;
     while (true)
     {
         c = input.getChar();
@@ -108,8 +114,9 @@ int main()
             if (c == 27)
             {
                 c = input.getChar();
-                if (c == 'i'){
-                std::cout<<std::endl;
+                if (c == 'i')
+                {
+                    std::cout << std::endl;
                     std::cout << "User is in editor mode" << std::endl;
                 }
                 else
@@ -124,13 +131,30 @@ int main()
                 data.push_back(currentline);
                 currentline.clear();
             }
+            else if (c == 19)
+            {
+                std::cout << "Enter the file name:- " << std::endl;
+                std::cin >> filename;
+                std::ofstream saveFile(filename);
+                if (saveFile.is_open())
+                {
+                    for (const auto &line : data)
+                    {
+                        saveFile << line << std::endl;
+                    }
+                    saveFile.close();
+                    std::cout << filename << "saved successfully" << std::endl;
+                }
+                else
+                    std::cerr << "Failed to save file" << std::endl;
+            }
             else
             {
                 currentline += c;
             }
         }
         else
-        { // Control Mode
+        {
             if (c == 27)
             {
                 c = input.getChar();
