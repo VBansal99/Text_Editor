@@ -9,38 +9,28 @@
 class UnbufferedInput
 {
 public:
-    // Constructor
     UnbufferedInput()
     {
-        // Clear the entire screen
         std::cout << "\033[2J";
-        // Move cursor to the top-left position
         std::cout << "\033[1;5H";
-        // get the current terminal settings and store into orig_termios
         tcgetattr(STDIN_FILENO, &orig_termios);
-        // Now copy those values into new termios
         newtermios = orig_termios;
-        // Manipulate those values.
         newtermios.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHOK | ECHONL | ISIG);
         newtermios.c_lflag &= ~(OPOST);
         newtermios.c_lflag &= ~(ICRNL | IXON | INPCK | ISTRIP);
+        newtermios.c_iflag &= ~(IXON);
         tcsetattr(STDIN_FILENO, TCSANOW, &newtermios);
-        drawverticallines('~');
+        //drawverticallines('~');
     }
-    // Destructor to make the terminal to original state.
     ~UnbufferedInput()
     {
-        // Clears the screen
         std::cout << "\033[2J";
-        // Move cursor to the top left position
         std::cout << "\033[1;1H";
         tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios);
     }
-    // Getchar functiion to get the value and retun the value
     char getChar()
     {
         char c;
-        // STDIN_FILE_NO:- reads the single character from the keyboard
         read(STDIN_FILENO, &c, 1);
         return c;
     }
@@ -97,11 +87,9 @@ private:
 };
 int main()
 {
-    // Creates the object of the class
     UnbufferedInput input;
     char c;
     std::cout << "Press any key (OR Press Q to exit)" << std::endl;
-    // Get the value from the user until the user press the q button to quit.
     std::string currentline;
     std::vector<std::string> data;
     bool isEditorMode = false;
@@ -110,7 +98,7 @@ int main()
     {
         c = input.getChar();
         if (isEditorMode)
-        { // Esc Key is pressed
+        { 
             if (c == 27)
             {
                 c = input.getChar();
