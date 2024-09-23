@@ -71,52 +71,27 @@ public:
 private:
     struct termios newtermios, orig_termios;
 };
-void saveFile(std::string filename, std::vector<std::string> data)
-{
-    std::cout << std::endl;
-    std::cout << "Enter the file name:- " << std::endl;
-    std::cin >> filename;
-    std::ofstream saveFile(filename);
-    if (saveFile.is_open())
+void saveFile(std::string filename, std::vector<std::string>data)
     {
-        for (const auto &line : data)
+        std::cout << std::endl;
+        std::cout << "Enter the file name:- ";
+        std::cin >> filename;
+        std::ofstream saveFile(filename);
+        if (saveFile.is_open())
         {
-            saveFile << line << std::endl;
+            for (const auto &line : data)
+            {
+                saveFile << line << std::endl;
+            }
+            saveFile.flush();
+            saveFile.close();
+            std::cout << filename << " saved successfully" << std::endl;
         }
-        saveFile.flush();
-        saveFile.close();
-        std::cout << filename << " saved successfully" << std::endl;
+        else
+        {
+            std::cerr << "Failed to save file" << std::endl;
+        }
     }
-    else
-    {
-        std::cerr << "Failed to save file" << std::endl;
-    }
-}
-
-void applyEditorMode(terminalSettings input, char c, bool isEditorMode)
-{
-    c = input.getChar();
-    if (c == 'i')
-    {
-        isEditorMode = true;
-        input.enableecho();
-        std::cout << "Switched to editor mode. Type your text." << std::endl;
-    }
-}
-
-void naviagtionKeys(terminalSettings input, char c)
-{
-    if (c == 'w' || c == 'W')
-        input.movecursorup();
-    else if (c == 'a' || c == 'A')
-        input.movecursorleft();
-    else if (c == 's' || c == 'S')
-        input.movecursordown();
-    else if (c == 'd' || c == 'D')
-        input.movecursorright();
-    else
-        std::cout << "Unknown command: " << c << std::endl;
-}
 int main()
 {
     terminalSettings input;
@@ -174,13 +149,28 @@ int main()
         {
             if (c == 27)
             {
-                applyEditorMode(input, c, isEditorMode);
+                c = input.getChar();
+                if (c == 'i')
+                {
+                    isEditorMode = true;
+                    input.enableecho();
+                    std::cout << "Switched to editor mode. Type your text." << std::endl;
+                }
             }
             else
             {
                 if (c == 'q' || c == 'Q')
                     break;
-                naviagtionKeys(input, c);
+                if (c == 'w' || c == 'W')
+                    input.movecursorup();
+                else if (c == 'a' || c == 'A')
+                    input.movecursorleft();
+                else if (c == 's' || c == 'S')
+                    input.movecursordown();
+                else if (c == 'd' || c == 'D')
+                    input.movecursorright();
+                else
+                    std::cout << "Unknown command: " << c << std::endl;
             }
         }
     }
